@@ -51,6 +51,20 @@ paths:
                   format: int64
                 descriptioon:
                   type: string
+  /order/{id}:
+    get:
+      summary: Get Order by ID
+      tags:
+        - store
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+      operationId: getOrderById
+      description: Get an Order by Id
   /customer:
     get:
       summary: Get Customers
