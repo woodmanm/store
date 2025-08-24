@@ -21,7 +21,7 @@ public class StoreExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(ApiNotFoundException.class)
     public ResponseEntity<Object> handleApiNotFoundException(ApiNotFoundException ex, WebRequest request) {
         ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.NOT_FOUND.value());
-        problemDetail.setTitle(HttpStatus.NOT_FOUND.name());
+        problemDetail.setTitle(HttpStatus.NOT_FOUND.getReasonPhrase());
         String message = getMessageSource()
                 .getMessage(
                         "api.resource.not.found", new Object[] {ex.getResourceType(), ex.getId()}, Locale.getDefault());
@@ -38,14 +38,10 @@ public class StoreExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<Object> handlePersistenceException(PersistenceException ex, WebRequest request) {
         logger.error(ex.getMessage(), ex);
         ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-        problemDetail.setTitle(HttpStatus.INTERNAL_SERVER_ERROR.name());
+        problemDetail.setTitle(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
         String message = getMessageSource().getMessage("api.internal.server.error", new Object[0], Locale.getDefault());
         problemDetail.setDetail(message);
-        return handleExceptionInternal(
-                ex,
-                problemDetail,
-                HttpHeaders.EMPTY,
-                HttpStatusCode.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()),
-                request);
+        return handleExceptionInternal(ex, problemDetail,  HttpHeaders.EMPTY,
+                HttpStatusCode.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()), request);
     }
 }

@@ -40,7 +40,7 @@ public class StoreExceptionHandlerTest {
         ProblemDetail problemDetail = (ProblemDetail) response.getBody();
         assertThat(problemDetail.getStatus(), is(404));
         assertThat(problemDetail.getType().toASCIIString(), is("about:blank"));
-        assertThat(problemDetail.getTitle(), is("NOT_FOUND"));
+        assertThat(problemDetail.getTitle(), is("Not Found"));
         assertThat(problemDetail.getDetail(), is("The requested resource of type Order was not found for ID 1"));
     }
 
@@ -55,7 +55,7 @@ public class StoreExceptionHandlerTest {
         ProblemDetail problemDetail = (ProblemDetail) response.getBody();
         assertThat(problemDetail.getStatus(), is(500));
         assertThat(problemDetail.getType().toASCIIString(), is("about:blank"));
-        assertThat(problemDetail.getTitle(), is("INTERNAL_SERVER_ERROR"));
+        assertThat(problemDetail.getTitle(), is("Internal Server Error"));
         assertThat(problemDetail.getDetail(), is("An error has occurred - Please try again in a few minutes"));
     }
 }

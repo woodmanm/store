@@ -13,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.ComponentScan;
@@ -24,6 +26,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -102,9 +105,22 @@ class OrderControllerTests {
         mockMvc.perform(get("/order/1"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.type").value("about:blank"))
-                .andExpect(jsonPath("$.title").value("NOT_FOUND"))
+                .andExpect(jsonPath("$.title").value("Not Found"))
                 .andExpect(jsonPath("$.detail").value("The requested resource of type Order was not found for ID  1"))
                 .andExpect(jsonPath("$.instance").value("/order/1"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {-1, 0})
+    void thatFindOrderByIdForNonPositiveIdReturnsBadRequest(int id) throws Exception {
+        mockMvc.perform(get("/order/{id}", id))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.type").value("about:blank"))
+                .andExpect(jsonPath("$.title").value("Bad Request"))
+                .andExpect(jsonPath("$.detail").value("Validation failure"))
+                .andExpect(jsonPath("$.instance").value("/order/" + id));
+
+        verifyNoInteractions(orderRepository);
     }
 
     @Test
@@ -114,7 +130,7 @@ class OrderControllerTests {
         mockMvc.perform(get("/order/1"))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.type").value("about:blank"))
-                .andExpect(jsonPath("$.title").value("INTERNAL_SERVER_ERROR"))
+                .andExpect(jsonPath("$.title").value("Internal Server Error"))
                 .andExpect(jsonPath("$.detail").value("An error has occurred - Please try again in a few minutes"))
                 .andExpect(jsonPath("$.instance").value("/order/1"));
     }
