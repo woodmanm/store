@@ -7,6 +7,8 @@ import com.example.store.repository.CustomerRepository;
 import com.example.store.repository.OrderRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import jakarta.persistence.QueryTimeoutException;
+
 import lombok.RequiredArgsConstructor;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -21,6 +23,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 import java.util.Optional;
 
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -78,5 +81,41 @@ class OrderControllerTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$..description").value("Test Order"))
                 .andExpect(jsonPath("$..customer.name").value("John Doe"));
+    }
+
+    @Test
+    void thatFindOrderByIdReturnsCorrectly() throws Exception {
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
+
+        mockMvc.perform(get("/order/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1L))
+                .andExpect(jsonPath("$.description").value("Test Order"))
+                .andExpect(jsonPath("$.customer.name").value("John Doe"))
+                .andExpect(jsonPath("$.customer.id").value(1L));
+    }
+
+    @Test
+    void thatFindOrderByIdReturnsNotFound() throws Exception {
+        when(orderRepository.findById(1L)).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/order/1"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.type").value("about:blank"))
+                .andExpect(jsonPath("$.title").value("NOT_FOUND"))
+                .andExpect(jsonPath("$.detail").value("The requested resource of type Order was not found for ID  1"))
+                .andExpect(jsonPath("$.instance").value("/order/1"));
+    }
+
+    @Test
+    void thatFindOrderByIdReturnsInternalErrorWhenPersistenceException() throws Exception {
+        when(orderRepository.findById(1L)).thenThrow(mock(QueryTimeoutException.class));
+
+        mockMvc.perform(get("/order/1"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.type").value("about:blank"))
+                .andExpect(jsonPath("$.title").value("INTERNAL_SERVER_ERROR"))
+                .andExpect(jsonPath("$.detail").value("An error has occurred - Please try again in a few minutes"))
+                .andExpect(jsonPath("$.instance").value("/order/1"));
     }
 }
