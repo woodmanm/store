@@ -26,12 +26,12 @@ public class StoreExceptionHandler extends ResponseEntityExceptionHandler {
                 .getMessage(
                         "api.resource.not.found", new Object[] {ex.getResourceType(), ex.getId()}, Locale.getDefault());
         /*
-          If the application allowed for users to select their locale then this would be sourced from either
-          the user's record or from a request scoped bean.
+          If the application allowed for customers to select their locale then this would be sourced from either
+          the customer's record or from a request scoped bean.
         */
         problemDetail.setDetail(message);
         return handleExceptionInternal(
-                ex, problemDetail, null, HttpStatusCode.valueOf(HttpStatus.NOT_FOUND.value()), request);
+                ex, problemDetail, HttpHeaders.EMPTY, HttpStatusCode.valueOf(HttpStatus.NOT_FOUND.value()), request);
     }
 
     @ExceptionHandler(PersistenceException.class)
@@ -41,7 +41,11 @@ public class StoreExceptionHandler extends ResponseEntityExceptionHandler {
         problemDetail.setTitle(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
         String message = getMessageSource().getMessage("api.internal.server.error", new Object[0], Locale.getDefault());
         problemDetail.setDetail(message);
-        return handleExceptionInternal(ex, problemDetail,  HttpHeaders.EMPTY,
-                HttpStatusCode.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()), request);
+        return handleExceptionInternal(
+                ex,
+                problemDetail,
+                HttpHeaders.EMPTY,
+                HttpStatusCode.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()),
+                request);
     }
 }
