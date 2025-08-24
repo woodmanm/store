@@ -25,6 +25,10 @@ public class CustomerSpecs {
             List<Predicate> predicates = nameComponents.stream()
                     .map(n -> builder.like(builder.lower(root.get("name")), "%" + n.toLowerCase() + "%"))
                     .toList();
+            /*
+               Note here that if the requirement is that the result must contain all of the search terms then
+               the builder should use 'and' rather than 'or'
+            */
             return builder.or(predicates.toArray(new Predicate[0]));
         };
     }

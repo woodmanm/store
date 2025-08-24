@@ -78,12 +78,13 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/order",
+							"raw": "{{baseUrl}}/order/{{orderId}}",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"order"
+								"order",
+								"{{orderId}}"
 							]
 						},
 						"description": "Get all orders"
@@ -319,6 +320,79 @@
 							},
 							"status": "Created",
 							"code": 201,
+							"_postman_previewlanguage": "text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Search Customers by Name",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Sr\"\n}",
+							"options": {
+								"raw": {
+									"headerFamily": "json",
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/customer/search",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"customer",
+								"search"
+							]
+						},
+						"description": "Fetch a list of customers who's name match one of the names in the search criteria"
+					},
+					"response": [
+						{
+							"name": "OK",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"name\": \"velit dolor ci\"\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/customer/search",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"customer",
+										"search"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
 							"_postman_previewlanguage": "text",
 							"header": [],
 							"cookie": [],
