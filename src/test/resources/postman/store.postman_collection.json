@@ -68,6 +68,62 @@
 					]
 				},
 				{
+					"name": "Get Order by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/order",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"order"
+							]
+						},
+						"description": "Get all orders"
+					},
+					"response": [
+						{
+							"name": "OK",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/order",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"order"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "[\n  {\n    \"id\": -1485057,\n    \"description\": \"nostrud cupidatat eiusmod nisi fugiat\",\n    \"customer\": {\n      \"id\": 11252449,\n      \"description\": \"ipsum id cillum in quis\"\n    }\n  },\n  {\n    \"id\": 16272534,\n    \"description\": \"magna quis irure adipisicing dolor\",\n    \"customer\": {\n      \"id\": -87046616,\n      \"description\": \"non Excepteur\"\n    }\n  }\n]"
+						}
+					]
+				},
+				{
 					"name": "Create Order",
 					"request": {
 						"method": "POST",
