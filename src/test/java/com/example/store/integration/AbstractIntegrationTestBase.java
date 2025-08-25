@@ -48,7 +48,7 @@ import static org.springframework.transaction.TransactionDefinition.ISOLATION_RE
 @EnableAutoConfiguration(exclude = {LiquibaseAutoConfiguration.class})
 public abstract class AbstractIntegrationTestBase {
 
-    private static final String[] DELETE_FROM_TABLES = {"order", "customer"};
+    private static final String[] DELETE_FROM_TABLES = {"order_product", "order", "customer"};
     private static final String[] SCHEMA_DATA = {"/db/changelog/schema.sql", "/db/changelog/product-schema.sql"};
 
     @Autowired

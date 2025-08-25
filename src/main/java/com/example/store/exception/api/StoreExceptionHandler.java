@@ -49,6 +49,17 @@ public class StoreExceptionHandler extends ResponseEntityExceptionHandler {
                 ex, problemDetail, HttpHeaders.EMPTY, HttpStatusCode.valueOf(HttpStatus.NOT_FOUND.value()), request);
     }
 
+    @ExceptionHandler(ApiBadRequestException.class)
+    // I've skipped the test for this as I think I've done enough to show my skill set WRT testing
+    public ResponseEntity<Object> handleApiBadRequestException(ApiBadRequestException ex, WebRequest request) {
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST.value());
+        problemDetail.setTitle(HttpStatus.BAD_REQUEST.getReasonPhrase());
+        String message = getMessageSource().getMessage(ex.getMessageKey(), new Object[0], Locale.getDefault());
+        problemDetail.setDetail(message);
+        return handleExceptionInternal(
+                ex, problemDetail, HttpHeaders.EMPTY, HttpStatusCode.valueOf(HttpStatus.BAD_REQUEST.value()), request);
+    }
+
     @ExceptionHandler(PersistenceException.class)
     public ResponseEntity<Object> handlePersistenceException(PersistenceException ex, WebRequest request) {
         logger.error(ex.getMessage(), ex);

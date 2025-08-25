@@ -5,8 +5,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -15,9 +13,7 @@ import java.util.List;
 @Data
 public class ProductDTO {
 
-    @NotNull
-    @Positive
-    private Long id;
+    @NotNull @Positive private Long id;
 
     @NotBlank
     @Size(min = 2, max = 255)
