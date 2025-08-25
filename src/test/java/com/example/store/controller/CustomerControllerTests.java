@@ -1,5 +1,6 @@
 package com.example.store.controller;
 
+import com.example.store.configuration.CacheConfiguration;
 import com.example.store.entity.Customer;
 import com.example.store.mapper.CustomerMapper;
 import com.example.store.presentation.CustomerSearchRequest;
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.MediaType;
@@ -28,7 +30,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(CustomerController.class)
-@ComponentScan(basePackageClasses = CustomerMapper.class)
+@ComponentScan(basePackageClasses = {CustomerMapper.class, CacheConfiguration.class})
 class CustomerControllerTests {
 
     @Autowired
@@ -36,6 +38,9 @@ class CustomerControllerTests {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private CacheManager cacheManager;
 
     @MockitoBean
     private CustomerRepository customerRepository;
@@ -47,6 +52,9 @@ class CustomerControllerTests {
         customer = new Customer();
         customer.setName("John Doe");
         customer.setId(1L);
+        cacheManager
+                .getCacheNames()
+                .forEach(cache -> cacheManager.getCache(cache).clear());
     }
 
     @Test
