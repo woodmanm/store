@@ -1,6 +1,7 @@
 package com.example.store.exception.api;
 
 import jakarta.persistence.PersistenceException;
+import jakarta.validation.ConstraintViolationException;
 
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Primary;
@@ -61,6 +62,28 @@ public class StoreExceptionHandler extends ResponseEntityExceptionHandler {
                 HttpHeaders.EMPTY,
                 HttpStatusCode.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()),
                 request);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<Object> handleConstraintViolationException(
+            ConstraintViolationException ex, WebRequest request) {
+        logger.error(ex.getMessage(), ex);
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST.value());
+        problemDetail.setTitle(HttpStatus.BAD_REQUEST.getReasonPhrase());
+        String message = getMessageSource().getMessage("api.bad.request", new Object[0], Locale.getDefault());
+        problemDetail.setDetail(message);
+        final Map<String, Set<String>> failures = new HashMap<>();
+        ex.getConstraintViolations().forEach(e -> {
+            String field = e.getPropertyPath().toString();
+            // could tidy up this field value.
+            if (!failures.containsKey(field)) {
+                failures.put(field, new HashSet<>());
+            }
+            failures.get(field).add(e.getMessage());
+        });
+        problemDetail.setProperty("failures", failures);
+        return handleExceptionInternal(
+                ex, problemDetail, HttpHeaders.EMPTY, HttpStatusCode.valueOf(HttpStatus.BAD_REQUEST.value()), request);
     }
 
     /*

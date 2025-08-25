@@ -49,7 +49,12 @@ public class CustomerController {
             })
     public CustomerDTO createCustomer(@RequestBody Customer customer) {
         Customer customerEntity = customerRepository.save(customer);
-        cacheManager.getCache(CacheConfiguration.CUSTOMERS).putIfAbsent(customerEntity.getId(), customerEntity);
+        try {
+            cacheManager.getCache(CacheConfiguration.CUSTOMERS).putIfAbsent(customerEntity.getId(), customerEntity);
+        } catch (RuntimeException ex) {
+            // If the caching isn't working we don't want the application to fail.
+            // TODO log this
+        }
         return customerMapper.customerToCustomerDTO(customerEntity);
     }
 

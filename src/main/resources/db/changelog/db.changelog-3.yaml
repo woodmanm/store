@@ -1,0 +1,13 @@
+# Note that these have been split into schema and data changes
+# This is so that the integration tests can create the schema without polluting it with data
+# I have not used Liquibase before so there may be a cleaner way to achieve this.
+
+databaseChangeLog:
+  - changeSet:
+      id: 3-schema
+      author: woodmanm
+      changes:
+        - sqlFile:
+            path: db/changelog/product-schema.sql
+        - sqlFile:
+            path: db/changelog/product-data.sql

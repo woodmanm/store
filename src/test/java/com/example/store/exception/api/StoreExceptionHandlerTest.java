@@ -1,6 +1,9 @@
 package com.example.store.exception.api;
 
 import jakarta.persistence.PersistenceException;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Path;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,6 +23,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
@@ -68,6 +72,32 @@ public class StoreExceptionHandlerTest {
     }
 
     @Test
+    void thatConstraintViolationExceptionIdHandled() {
+        when(messageSource.getMessage("api.bad.request", new Object[0], Locale.getDefault()))
+                .thenReturn("Invalid data was supplied");
+        ConstraintViolation violation = mock(ConstraintViolation.class);
+        Path propertyPath = mock(Path.class);
+        when(propertyPath.toString()).thenReturn("id");
+        when(violation.getMessage()).thenReturn("Must be non-negative");
+        when(violation.getPropertyPath()).thenReturn(propertyPath);
+
+        ResponseEntity<Object> response = classUnderTest.handleConstraintViolationException(
+                new ConstraintViolationException("Invalid data", Set.<ConstraintViolation<?>>of(violation)),
+                webRequest);
+
+        ProblemDetail problemDetail = (ProblemDetail) response.getBody();
+        assertThat(problemDetail.getStatus(), is(400));
+        assertThat(problemDetail.getType().toASCIIString(), is("about:blank"));
+        assertThat(problemDetail.getTitle(), is("Bad Request"));
+        assertThat(problemDetail.getDetail(), is("Invalid data was supplied"));
+        Map<String, Object> properties = problemDetail.getProperties();
+        Map<String, Object> failures = (Map<String, Object>) properties.get("failures");
+        assertThat(failures.size(), is(1));
+        Set<String> errors = (Set<String>) failures.get("id");
+        assertThat(errors, hasItems("Must be non-negative"));
+    }
+
+    @Test
     void thatHandleMethodArgumentNotValidIsCorrect() {
         BindingResult bindingResult = mock(BindingResult.class);
         when(bindingResult.getAllErrors())
@@ -91,4 +121,5 @@ public class StoreExceptionHandlerTest {
         assertThat(failures.get("name"), is(Set.of("second error", "first error")));
         assertThat(failures.get("direction"), is(Set.of("south")));
     }
+
 }
