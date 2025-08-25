@@ -26,6 +26,6 @@ public class CacheConfiguration {
            I have created caches for list get all and get by ID for each instance. One could attempt of manage
            both cases with a single cache but that approach has a bunch of issues around concurrency.
         */
-        return new ConcurrentMapCacheManager(ORDERS, ALL_CUSTOMERS, CUSTOMERS, ALL_ORDERS);
+        return new ConcurrentMapCacheManager();
     }
 }

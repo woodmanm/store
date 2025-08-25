@@ -58,7 +58,7 @@ public class OrderController {
             evict = {
                 @CacheEvict(value = CacheConfiguration.ALL_ORDERS, allEntries = true),
                 @CacheEvict(value = CacheConfiguration.ALL_CUSTOMERS, allEntries = true),
-                @CacheEvict(value = CacheConfiguration.CUSTOMERS, key = "#order.customer.id")
+                @CacheEvict(value = CacheConfiguration.CUSTOMERS, allEntries = true)
             })
     public OrderDTO createOrder(@RequestBody @Valid final Order order) {
         Long customerId = order.getCustomer().getId();
@@ -88,13 +88,14 @@ public class OrderController {
             product.getOrders().add(orderEntity);
         });
         Order savedOrder = orderRepository.save(orderEntity);
+        OrderDTO orderDTO = orderMapper.orderToOrderDTO(savedOrder);
         try {
-            cacheManager.getCache(CacheConfiguration.ORDERS).putIfAbsent(orderEntity.getId(), savedOrder);
+            cacheManager.getCache(CacheConfiguration.ORDERS).putIfAbsent(orderDTO.getId(), orderDTO);
         } catch (RuntimeException ex) {
             // If the caching isn't working we don't want the application to fail.
             // TODO log this
         }
-        return orderMapper.orderToOrderDTO(savedOrder);
+        return orderDTO;
     }
 
     /*
@@ -102,7 +103,7 @@ public class OrderController {
     (unless you are writing the spec first and generating the code from that).
     */
     @GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Cacheable(value = CacheConfiguration.ORDERS, key = "#id")
+    @Cacheable(value = CacheConfiguration.ORDERS)
     public OrderDTO getOrderById(@PathVariable(name = "id") @Positive Long id) {
         Optional<Order> order = orderRepository.findById(id);
         if (order.isEmpty()) {
