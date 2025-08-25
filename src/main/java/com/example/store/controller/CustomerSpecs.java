@@ -18,7 +18,7 @@ public class CustomerSpecs {
                 .distinct()
                 .toList();
         /*
-           Depending on the requirements we should throw here if the size of this list is malicious.
+           Depending on the requirements we should throw here if the size of this list is maliciously long.
            Like queries are expensive.
         */
         return (root, query, builder) -> {

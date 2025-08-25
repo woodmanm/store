@@ -3,6 +3,7 @@ package com.example.store.presentation;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 import lombok.Data;
@@ -12,6 +13,7 @@ import lombok.Data;
 public class CustomerSearchRequest {
 
     @Size(min = 2, max = 255, message = "{customer.search.input}")
+    @NotBlank(message = "{customer.search.input}")
     @JsonProperty("name")
     private String name;
 }
