@@ -10098,3 +10098,6 @@ INSERT INTO "order" (id, description, customer_id) VALUES (9997, 'Oriental Bronz
 INSERT INTO "order" (id, description, customer_id) VALUES (9998, 'Tasty Steel Bacon', 43);
 INSERT INTO "order" (id, description, customer_id) VALUES (9999, 'Refined Frozen Pizza', 16);
 INSERT INTO "order" (id, description, customer_id) VALUES (10000, 'Bespoke Frozen Gloves', 58);
+
+SELECT setval('customer_id_seq', (SELECT max(id) FROM customer));
+SELECT setval('order_id_seq', (SELECT max(id) FROM "order"));
