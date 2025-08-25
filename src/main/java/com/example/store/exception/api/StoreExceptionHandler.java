@@ -2,21 +2,35 @@ package com.example.store.exception.api;
 
 import jakarta.persistence.PersistenceException;
 
+import org.springframework.context.MessageSource;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
 @ControllerAdvice
 @SuppressWarnings("unused")
+@Primary
 public class StoreExceptionHandler extends ResponseEntityExceptionHandler {
+
+    public StoreExceptionHandler(MessageSource messageSource) {
+        setMessageSource(messageSource);
+    }
 
     @ExceptionHandler(ApiNotFoundException.class)
     public ResponseEntity<Object> handleApiNotFoundException(ApiNotFoundException ex, WebRequest request) {
@@ -47,5 +61,28 @@ public class StoreExceptionHandler extends ResponseEntityExceptionHandler {
                 HttpHeaders.EMPTY,
                 HttpStatusCode.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()),
                 request);
+    }
+
+    /*
+       Something is off here. It shouldn't be this much work to resolve the custom message from the key.
+    */
+    @Nullable @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        final Map<String, Set<String>> failures = new HashMap<>();
+        ex.getBindingResult().getAllErrors().forEach(e -> {
+            if (e instanceof FieldError fieldError) {
+                String field = fieldError.getField();
+                if (!failures.containsKey(fieldError.getField())) {
+                    failures.put(field, new HashSet<>());
+                }
+                failures.get(field).add(fieldError.getDefaultMessage());
+            }
+        });
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST.value());
+        problemDetail.setTitle(HttpStatus.BAD_REQUEST.getReasonPhrase());
+        problemDetail.setDetail("Invalid input");
+        problemDetail.setProperty("failures", failures);
+        return handleExceptionInternal(ex, problemDetail, headers, status, request);
     }
 }

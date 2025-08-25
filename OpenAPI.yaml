@@ -101,6 +101,24 @@ paths:
                   format: int64
                 name:
                   type: string
+  /customer/search:
+    post:
+      summary: Search Customers by Name
+      tags:
+        - store
+      responses:
+        '200':
+          description: OK
+      operationId: findCustomersByName
+      description: Fetch a list of customers who's name match one of the names in the search criteria
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
   /products:
     get:
       summary: Get Products

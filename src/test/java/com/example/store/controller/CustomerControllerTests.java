@@ -2,20 +2,27 @@ package com.example.store.controller;
 
 import com.example.store.entity.Customer;
 import com.example.store.mapper.CustomerMapper;
+import com.example.store.presentation.CustomerSearchRequest;
 import com.example.store.repository.CustomerRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -61,5 +68,22 @@ class CustomerControllerTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$..name").value("John Doe"));
         ;
+    }
+
+    @Test
+    void testSearchCustomerCallsTheRepositoryCorrectly() throws Exception {
+        when(customerRepository.findAll(any(Specification.class))).thenReturn(List.of(customer));
+        CustomerSearchRequest request = new CustomerSearchRequest();
+        request.setName("John");
+
+        mockMvc.perform(post("/customer/search")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$..name").value("John Doe"));
+
+        ArgumentCaptor<Specification> captor = ArgumentCaptor.forClass(Specification.class);
+        verify(customerRepository).findAll(captor.capture());
+        MatcherAssert.assertThat(captor.getValue(), CoreMatchers.notNullValue());
     }
 }
