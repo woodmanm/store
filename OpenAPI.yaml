@@ -49,7 +49,7 @@ paths:
                 id:
                   type: integer
                   format: int64
-                descriptioon:
+                description:
                   type: string
   /order/{id}:
     get:
