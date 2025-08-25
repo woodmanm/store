@@ -62,9 +62,9 @@ public class OrderController {
         }
         Customer customerEntity = customer.get();
         order.setCustomer(customerEntity);
-        Order entity = orderRepository.save(order);
-        cacheManager.getCache(CacheConfiguration.ORDERS).putIfAbsent(entity.getId(), entity);
-        return orderMapper.orderToOrderDTO(entity);
+        Order orderEntity = orderRepository.save(order);
+        cacheManager.getCache(CacheConfiguration.ORDERS).putIfAbsent(orderEntity.getId(), orderEntity);
+        return orderMapper.orderToOrderDTO(orderEntity);
     }
 
     /*
@@ -72,7 +72,7 @@ public class OrderController {
     (unless you are writing the spec first and generating the code from that).
     */
     @GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Cacheable(value = "orders", key = "#id")
+    @Cacheable(value = CacheConfiguration.ORDERS, key = "#id")
     public OrderDTO getOrderById(@PathVariable(name = "id") @Positive Long id) {
         Optional<Order> order = orderRepository.findById(id);
         if (order.isEmpty()) {

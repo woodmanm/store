@@ -41,10 +41,6 @@ public class CustomerController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    /*
-       We need to be very heavy handed with the cache evict because we are passing entities rather than DTOs to the
-       create methods in the controllers.
-    */
     @Caching(
             evict = {
                 @CacheEvict(value = CacheConfiguration.ALL_ORDERS, allEntries = true),
@@ -52,9 +48,9 @@ public class CustomerController {
                 @CacheEvict(value = CacheConfiguration.ALL_CUSTOMERS, allEntries = true)
             })
     public CustomerDTO createCustomer(@RequestBody Customer customer) {
-        Customer entity = customerRepository.save(customer);
-        cacheManager.getCache(CacheConfiguration.CUSTOMERS).putIfAbsent(entity.getId(), entity);
-        return customerMapper.customerToCustomerDTO(entity);
+        Customer customerEntity = customerRepository.save(customer);
+        cacheManager.getCache(CacheConfiguration.CUSTOMERS).putIfAbsent(customerEntity.getId(), customerEntity);
+        return customerMapper.customerToCustomerDTO(customerEntity);
     }
 
     /*
