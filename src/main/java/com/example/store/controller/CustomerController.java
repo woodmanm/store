@@ -1,5 +1,6 @@
 package com.example.store.controller;
 
+import com.example.store.configuration.CacheConfiguration;
 import com.example.store.dto.CustomerDTO;
 import com.example.store.entity.Customer;
 import com.example.store.mapper.CustomerMapper;
@@ -10,6 +11,10 @@ import jakarta.validation.Valid;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -26,16 +31,26 @@ public class CustomerController {
 
     private final CustomerRepository customerRepository;
     private final CustomerMapper customerMapper;
+    private final CacheManager cacheManager;
 
     @GetMapping
+    @Cacheable(value = CacheConfiguration.ALL_CUSTOMERS)
     public List<CustomerDTO> getAllCustomers() {
         return customerMapper.customersToCustomerDTOs(customerRepository.findAll());
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @Caching(
+            evict = {
+                @CacheEvict(value = CacheConfiguration.ALL_ORDERS, allEntries = true),
+                @CacheEvict(value = CacheConfiguration.ORDERS, allEntries = true),
+                @CacheEvict(value = CacheConfiguration.ALL_CUSTOMERS, allEntries = true)
+            })
     public CustomerDTO createCustomer(@RequestBody Customer customer) {
-        return customerMapper.customerToCustomerDTO(customerRepository.save(customer));
+        Customer customerEntity = customerRepository.save(customer);
+        cacheManager.getCache(CacheConfiguration.CUSTOMERS).putIfAbsent(customerEntity.getId(), customerEntity);
+        return customerMapper.customerToCustomerDTO(customerEntity);
     }
 
     /*

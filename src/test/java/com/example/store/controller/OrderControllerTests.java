@@ -1,5 +1,6 @@
 package com.example.store.controller;
 
+import com.example.store.configuration.CacheConfiguration;
 import com.example.store.entity.Customer;
 import com.example.store.entity.Order;
 import com.example.store.mapper.CustomerMapper;
@@ -21,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
+import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -36,7 +38,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(OrderController.class)
-@ComponentScan(basePackageClasses = CustomerMapper.class)
+@ComponentScan(basePackageClasses = {CustomerMapper.class, CacheConfiguration.class})
 @ExtendWith(OutputCaptureExtension.class)
 @RequiredArgsConstructor
 class OrderControllerTests {
@@ -46,6 +48,9 @@ class OrderControllerTests {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private CacheManager cacheManager;
 
     @MockitoBean
     private OrderRepository orderRepository;
@@ -66,6 +71,10 @@ class OrderControllerTests {
         order.setDescription("Test Order");
         order.setId(1L);
         order.setCustomer(customer);
+
+        cacheManager
+                .getCacheNames()
+                .forEach(cache -> cacheManager.getCache(cache).clear());
     }
 
     @Test
