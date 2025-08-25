@@ -121,5 +121,4 @@ public class StoreExceptionHandlerTest {
         assertThat(failures.get("name"), is(Set.of("second error", "first error")));
         assertThat(failures.get("direction"), is(Set.of("south")));
     }
-
 }

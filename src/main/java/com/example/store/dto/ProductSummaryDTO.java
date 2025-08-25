@@ -4,16 +4,14 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
-
-import lombok.AllArgsConstructor;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Builder;
 import lombok.Data;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Data
-public class ProductDTO {
+@Builder
+public class ProductSummaryDTO {
 
     @NotNull
     @Positive
@@ -23,5 +21,6 @@ public class ProductDTO {
     @Size(min = 2, max = 255)
     private String description;
 
-    private List<OrderDTO> orders = new ArrayList<>();
+    @Builder.Default
+    private List<Long> orders = new ArrayList<>();
 }
