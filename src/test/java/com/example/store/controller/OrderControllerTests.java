@@ -3,9 +3,11 @@ package com.example.store.controller;
 import com.example.store.configuration.CacheConfiguration;
 import com.example.store.entity.Customer;
 import com.example.store.entity.Order;
+import com.example.store.entity.Product;
 import com.example.store.mapper.CustomerMapper;
 import com.example.store.repository.CustomerRepository;
 import com.example.store.repository.OrderRepository;
+import com.example.store.repository.ProductRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.persistence.QueryTimeoutException;
@@ -32,6 +34,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -58,8 +61,13 @@ class OrderControllerTests {
     @MockitoBean
     private CustomerRepository customerRepository;
 
+    @MockitoBean
+    private ProductRepository productRepository;
+
     private Order order;
     private Customer customer;
+    private Product product1;
+    private Product product2;
 
     @BeforeEach
     void setUp() {
@@ -72,6 +80,20 @@ class OrderControllerTests {
         order.setId(1L);
         order.setCustomer(customer);
 
+        product1 = new Product();
+        product1.setDescription("Test Product 1");
+        product1.setId(2L);
+
+        product2 = new Product();
+        product2.setDescription("Test Product 2");
+        product2.setId(3L);
+
+        order.getProducts().add(product1);
+        order.getProducts().add(product2);
+
+        when(productRepository.findById(2L)).thenReturn(Optional.of(product1));
+        when(productRepository.findById(3L)).thenReturn(Optional.of(product2));
+
         cacheManager
                 .getCacheNames()
                 .forEach(cache -> cacheManager.getCache(cache).clear());
@@ -80,14 +102,24 @@ class OrderControllerTests {
     @Test
     void testCreateOrder() throws Exception {
         when(customerRepository.findById(1L)).thenReturn(Optional.of(customer));
-        when(orderRepository.save(order)).thenReturn(order);
+        when(orderRepository.save(any(Order.class))).thenAnswer(a -> {
+            Order order = (Order) a.getArguments()[0];
+            if (order.getId() == null) {
+                order.setId(5L);
+            }
+            return order;
+        });
 
         mockMvc.perform(post("/order")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(order)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.description").value("Test Order"))
-                .andExpect(jsonPath("$.customer.name").value("John Doe"));
+                .andExpect(jsonPath("$.customer.name").value("John Doe"))
+                .andExpect(jsonPath("$.products[0].id").value(2L))
+                .andExpect(jsonPath("$.products[0].description").value("Test Product 1"))
+                .andExpect(jsonPath("$.products[1].id").value(3L))
+                .andExpect(jsonPath("$.products[1].description").value("Test Product 2"));
     }
 
     @Test
@@ -96,8 +128,12 @@ class OrderControllerTests {
 
         mockMvc.perform(get("/order"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$..description").value("Test Order"))
-                .andExpect(jsonPath("$..customer.name").value("John Doe"));
+                .andExpect(jsonPath("$.[0].description").value("Test Order"))
+                .andExpect(jsonPath("$.[0].customer.name").value("John Doe"))
+                .andExpect(jsonPath("$.[0].products[0].description").value("Test Product 1"))
+                .andExpect(jsonPath("$.[0].products[0].id").value(2L))
+                .andExpect(jsonPath("$.[0].products[1].description").value("Test Product 2"))
+                .andExpect(jsonPath("$.[0].products[1].id").value(3L));
     }
 
     @Test
@@ -131,8 +167,9 @@ class OrderControllerTests {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.type").value("about:blank"))
                 .andExpect(jsonPath("$.title").value("Bad Request"))
-                .andExpect(jsonPath("$.detail").value("Validation failure"))
-                .andExpect(jsonPath("$.instance").value("/order/" + id));
+                .andExpect(jsonPath("$.detail").value("Invalid data was supplied"))
+                .andExpect(jsonPath("$.instance").value("/order/" + id))
+                .andExpect(jsonPath("$.failures.size()").value(1));
 
         verifyNoInteractions(orderRepository);
     }

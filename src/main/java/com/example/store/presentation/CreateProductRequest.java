@@ -5,13 +5,15 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+import lombok.Builder;
 import lombok.Data;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Data
-public class CustomerSearchRequest {
+@Builder
+public class CreateProductRequest {
 
-    @Size(min = 2, max = 255, message = "{customer.search.input}")
-    @NotBlank(message = "{customer.search.input}")
-    private String name;
+    @Size(min = 2, max = 255)
+    @NotBlank
+    private String description;
 }

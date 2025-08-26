@@ -27,6 +27,11 @@ import io.restassured.RestAssured;
 import io.restassured.parsing.Parser;
 import io.restassured.specification.RequestSpecification;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -43,7 +48,8 @@ import static org.springframework.transaction.TransactionDefinition.ISOLATION_RE
 @EnableAutoConfiguration(exclude = {LiquibaseAutoConfiguration.class})
 public abstract class AbstractIntegrationTestBase {
 
-    private static final String[] DELETE_FROM_TABLES = {"order", "customer"};
+    private static final String[] DELETE_FROM_TABLES = {"order_product", "order", "customer"};
+    private static final String[] SCHEMA_DATA = {"/db/changelog/schema.sql", "/db/changelog/product-schema.sql"};
 
     @Autowired
     protected PlatformTransactionManager platformTransactionManager;
@@ -62,8 +68,17 @@ public abstract class AbstractIntegrationTestBase {
 
     @BeforeAll
     protected static void setUpGlobal() throws Exception {
+        Path tempFile = Files.createTempFile("schema", "sql");
+        Arrays.stream(SCHEMA_DATA).forEach(r -> {
+            InputStream inputStream = AbstractIntegrationTestBase.class.getResourceAsStream(r);
+            try {
+                Files.write(tempFile, inputStream.readAllBytes(), StandardOpenOption.APPEND);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
         postgreSQLContainer.withCopyFileToContainer(
-                MountableFile.forClasspathResource("db/changelog/schema.sql"), "/docker-entrypoint-initdb.d/init.sql");
+                MountableFile.forHostPath(tempFile), "/docker-entrypoint-initdb.d/init.sql");
         if (!postgreSQLContainer.isRunning()) {
             postgreSQLContainer.start();
         }
