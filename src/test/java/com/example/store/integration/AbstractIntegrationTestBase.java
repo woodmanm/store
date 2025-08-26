@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -68,17 +69,23 @@ public abstract class AbstractIntegrationTestBase {
 
     @BeforeAll
     protected static void setUpGlobal() throws Exception {
-        Path tempFile = Files.createTempFile("schema", "sql");
-        Arrays.stream(SCHEMA_DATA).forEach(r -> {
-            InputStream inputStream = AbstractIntegrationTestBase.class.getResourceAsStream(r);
-            try {
-                Files.write(tempFile, inputStream.readAllBytes(), StandardOpenOption.APPEND);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        Path path = Paths.get("full_schema.sql");
+        if (!Files.exists(path)) {
+            Path file = Files.createFile(path);
+            path = file;
+
+            Arrays.stream(SCHEMA_DATA).forEach(r -> {
+                InputStream inputStream = AbstractIntegrationTestBase.class.getResourceAsStream(r);
+                try {
+                    Files.write(file, inputStream.readAllBytes(), StandardOpenOption.APPEND);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        }
         postgreSQLContainer.withCopyFileToContainer(
-                MountableFile.forHostPath(tempFile), "/docker-entrypoint-initdb.d/init.sql");
+                MountableFile.forHostPath(path), "/docker-entrypoint-initdb.d/init.sql");
+
         if (!postgreSQLContainer.isRunning()) {
             postgreSQLContainer.start();
         }

@@ -37,3 +37,6 @@ out/
 .vscode/
 
 node_modules
+
+# This is a hack to fix temp files not being accessible in github actions (without lots more work)
+full_schema.sql
