@@ -57,6 +57,21 @@ public class StoreExceptionHandlerTest {
     }
 
     @Test
+    void thatApiBadRequestIsHandled() {
+        when(messageSource.getMessage("api.bad.request", new Object[0], Locale.getDefault()))
+                .thenReturn("Invalid data was supplied");
+
+        ResponseEntity<Object> response = classUnderTest.handleApiBadRequestException(
+                new ApiBadRequestException("bad wolf", "api.bad.request"), webRequest);
+
+        ProblemDetail problemDetail = (ProblemDetail) response.getBody();
+        assertThat(problemDetail.getStatus(), is(400));
+        assertThat(problemDetail.getType().toASCIIString(), is("about:blank"));
+        assertThat(problemDetail.getTitle(), is("Bad Request"));
+        assertThat(problemDetail.getDetail(), is("Invalid data was supplied"));
+    }
+
+    @Test
     void thatPersistenceExceptionIsHandled() {
         when(messageSource.getMessage("api.internal.server.error", new Object[0], Locale.getDefault()))
                 .thenReturn("An error has occurred - Please try again in a few minutes");

@@ -50,7 +50,6 @@ public class StoreExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(ApiBadRequestException.class)
-    // I've skipped the test for this as I think I've done enough to show my skill set WRT testing
     public ResponseEntity<Object> handleApiBadRequestException(ApiBadRequestException ex, WebRequest request) {
         ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST.value());
         problemDetail.setTitle(HttpStatus.BAD_REQUEST.getReasonPhrase());

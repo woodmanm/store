@@ -5,6 +5,7 @@ import com.example.store.dto.OrderDTO;
 import com.example.store.entity.Customer;
 import com.example.store.entity.Order;
 import com.example.store.entity.Product;
+import com.example.store.exception.api.ApiBadRequestException;
 import com.example.store.exception.api.ApiNotFoundException;
 import com.example.store.mapper.OrderMapper;
 import com.example.store.repository.CustomerRepository;
@@ -22,6 +23,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -78,6 +80,10 @@ public class OrderController {
         orderEntity.setCustomer(customerEntity);
         customerEntity.getOrders().add(orderEntity);
         orderEntity.setDescription(order.getDescription());
+        if (CollectionUtils.isEmpty(order.getProducts())) {
+            // If we were using a model object then this could be annotated on the request object
+            throw new ApiBadRequestException("At least one product is required", "order.product.size");
+        }
         order.getProducts().forEach(p -> {
             Optional<Product> productOptional = productRepository.findById(p.getId());
             if (productOptional.isEmpty()) {
