@@ -37,7 +37,7 @@ jobs:
       - name: Set tag sha
         run: echo "SHA_SHORT=$(git rev-parse --short HEAD)" >> "$GITHUB_ENV"
       - name: Build with gradle
-        run: ./gradlew build
+        run: ./gradlew build -Dorg.gradle.logging.level=debug
         env:
           GITHUB_TOKEN: ${{ secrets.PACKAGE_ACCESS_TOKEN }}
       - uses: actions/upload-artifact@v4

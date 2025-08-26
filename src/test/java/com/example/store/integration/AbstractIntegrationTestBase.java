@@ -4,6 +4,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfiguration;
@@ -68,18 +69,18 @@ public abstract class AbstractIntegrationTestBase {
 
     @BeforeAll
     protected static void setUpGlobal() throws Exception {
-        Path tempFile = Files.createTempFile("schema", "sql");
-        Arrays.stream(SCHEMA_DATA).forEach(r -> {
-            InputStream inputStream = AbstractIntegrationTestBase.class.getResourceAsStream(r);
-            try {
-                Files.write(tempFile, inputStream.readAllBytes(), StandardOpenOption.APPEND);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
-        System.out.println("SQL SCHEMA FILE: " + tempFile.toAbsolutePath());
-        postgreSQLContainer.withCopyFileToContainer(
-                MountableFile.forHostPath(tempFile), "/docker-entrypoint-initdb.d/init.sql");
+//        Path tempFile = Files.createTempFile("schema", "sql");
+//        Arrays.stream(SCHEMA_DATA).forEach(r -> {
+//            InputStream inputStream = AbstractIntegrationTestBase.class.getResourceAsStream(r);
+//            try {
+//                Files.write(tempFile, inputStream.readAllBytes(), StandardOpenOption.APPEND);
+//            } catch (IOException e) {
+//                throw new RuntimeException(e);
+//            }
+//        });
+//        postgreSQLContainer.withCopyFileToContainer(
+//                MountableFile.forHostPath(tempFile), "/docker-entrypoint-initdb.d/init.sql");
+
         if (!postgreSQLContainer.isRunning()) {
             postgreSQLContainer.start();
         }
