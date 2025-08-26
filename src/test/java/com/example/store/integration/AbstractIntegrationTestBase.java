@@ -21,11 +21,18 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.utility.MountableFile;
 
 import io.restassured.RestAssured;
 import io.restassured.parsing.Parser;
 import io.restassured.specification.RequestSpecification;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -62,17 +69,17 @@ public abstract class AbstractIntegrationTestBase {
 
     @BeforeAll
     protected static void setUpGlobal() throws Exception {
-        //        Path tempFile = Files.createTempFile("schema", "sql");
-        //        Arrays.stream(SCHEMA_DATA).forEach(r -> {
-        //            InputStream inputStream = AbstractIntegrationTestBase.class.getResourceAsStream(r);
-        //            try {
-        //                Files.write(tempFile, inputStream.readAllBytes(), StandardOpenOption.APPEND);
-        //            } catch (IOException e) {
-        //                throw new RuntimeException(e);
-        //            }
-        //        });
-        //        postgreSQLContainer.withCopyFileToContainer(
-        //                MountableFile.forHostPath(tempFile), "/docker-entrypoint-initdb.d/init.sql");
+        Path file = Files.createFile(Paths.get("full_schema.sql"));
+        Arrays.stream(SCHEMA_DATA).forEach(r -> {
+            InputStream inputStream = AbstractIntegrationTestBase.class.getResourceAsStream(r);
+            try {
+                Files.write(file, inputStream.readAllBytes(), StandardOpenOption.APPEND);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        postgreSQLContainer.withCopyFileToContainer(
+                MountableFile.forHostPath(file), "/docker-entrypoint-initdb.d/init.sql");
 
         if (!postgreSQLContainer.isRunning()) {
             postgreSQLContainer.start();
