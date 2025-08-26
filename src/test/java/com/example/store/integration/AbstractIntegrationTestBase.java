@@ -69,17 +69,22 @@ public abstract class AbstractIntegrationTestBase {
 
     @BeforeAll
     protected static void setUpGlobal() throws Exception {
-        Path file = Files.createFile(Paths.get("full_schema.sql"));
-        Arrays.stream(SCHEMA_DATA).forEach(r -> {
-            InputStream inputStream = AbstractIntegrationTestBase.class.getResourceAsStream(r);
-            try {
-                Files.write(file, inputStream.readAllBytes(), StandardOpenOption.APPEND);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        Path path = Paths.get("full_schema.sql");
+        if (!Files.exists(path)) {
+            Path file = Files.createFile(path);
+            path = file;
+
+            Arrays.stream(SCHEMA_DATA).forEach(r -> {
+                InputStream inputStream = AbstractIntegrationTestBase.class.getResourceAsStream(r);
+                try {
+                    Files.write(file, inputStream.readAllBytes(), StandardOpenOption.APPEND);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        }
         postgreSQLContainer.withCopyFileToContainer(
-                MountableFile.forHostPath(file), "/docker-entrypoint-initdb.d/init.sql");
+                MountableFile.forHostPath(path), "/docker-entrypoint-initdb.d/init.sql");
 
         if (!postgreSQLContainer.isRunning()) {
             postgreSQLContainer.start();
