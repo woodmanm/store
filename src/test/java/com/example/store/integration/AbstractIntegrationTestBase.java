@@ -77,6 +77,7 @@ public abstract class AbstractIntegrationTestBase {
                 throw new RuntimeException(e);
             }
         });
+        System.out.println("SQL SCHEMA FILE: " + tempFile.toAbsolutePath());
         postgreSQLContainer.withCopyFileToContainer(
                 MountableFile.forHostPath(tempFile), "/docker-entrypoint-initdb.d/init.sql");
         if (!postgreSQLContainer.isRunning()) {
